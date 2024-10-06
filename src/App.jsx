@@ -54,6 +54,7 @@ function App() {
   const [todos, setTodos] = useState([]);
 
   //retrive data from local storage
+  //when todos are not fetched from the API
   // useEffect(() => {
   //   const storedTodos = localStorage.getItem("todos");
   //   if (storedTodos) {
@@ -62,7 +63,7 @@ function App() {
   // }, []);
 
   //get n todos from the placeholder API
-  const url = "https://jsonplaceholder.typicode.com/todos?_limit=10";
+  const url = "https://jsonplaceholder.typicode.com/todos?_limit=5";
 
   useEffect(() => {
     async function getTodos() {
