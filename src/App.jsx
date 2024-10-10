@@ -53,26 +53,26 @@ function App() {
 
   const [todos, setTodos] = useState([]);
 
-  //retrive data from local storage
-  //when todos are not fetched from the API
-  // useEffect(() => {
-  //   const storedTodos = localStorage.getItem("todos");
-  //   if (storedTodos) {
-  //     setTodos(JSON.parse(storedTodos));
-  //   }
-  // }, []);
+  /* retrive data from local storage
+  when todos are not fetched from the API */
+  useEffect(() => {
+    const storedTodos = localStorage.getItem("todos");
+    if (storedTodos) {
+      setTodos(JSON.parse(storedTodos));
+    }
+  }, []);
 
   //get n todos from the placeholder API
-  const url = "https://jsonplaceholder.typicode.com/todos?_limit=5";
+  // const url = "https://jsonplaceholder.typicode.com/todos?_limit=5";
 
-  useEffect(() => {
-    async function getTodos() {
-      const response = await fetch(url);
-      const data = await response.json();
-      setTodos(data);
-    }
-    getTodos();
-  }, []);
+  // useEffect(() => {
+  //   async function getTodos() {
+  //     const response = await fetch(url);
+  //     const data = await response.json();
+  //     setTodos(data);
+  //   }
+  //   getTodos();
+  // }, []);
 
   function handleCompleteAll() {
     setTodos("");
