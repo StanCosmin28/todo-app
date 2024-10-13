@@ -1,6 +1,6 @@
 import "../index.css";
 
-export default function InputToDo({ todos, setTodos }) {
+export default function InputToDo({ todos, setTodos, onAdd }) {
   function handleSubmit(e) {
     e.preventDefault();
     const value = e.target.todo.value;
@@ -9,9 +9,11 @@ export default function InputToDo({ todos, setTodos }) {
       id: self.crypto.randomUUID(),
       is_completed: false,
     };
-    setTodos((prevTodos) => [...prevTodos, newTodo]);
+    onAdd(setTodos((prevTodos) => [...prevTodos, newTodo]));
+    // setTodos((prevTodos) => [...prevTodos, newTodo]);
 
     const updatedTodoList = JSON.stringify([...todos, newTodo]);
+    // console.log(JSON.parse(updatedTodoList));
     localStorage.setItem("todos", updatedTodoList);
 
     e.target.reset();

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "../index.css";
 
-export default function TODO({ item, todos, setTodos }) {
+export default function TODO({ item, todos, setTodos, onDelete }) {
   const [editing, setEditing] = useState(false);
   const inputRef = useRef(null);
 
@@ -18,8 +18,8 @@ export default function TODO({ item, todos, setTodos }) {
   }
 
   function handleDelete() {
+    // onDelete();
     setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== item.id));
-
     const updatedTodos = JSON.stringify(
       todos.filter((todo) => todo.id !== item.id)
     );
@@ -67,7 +67,12 @@ export default function TODO({ item, todos, setTodos }) {
   return (
     <>
       {item.title && (
-        <li key={item?.id} style={{ opacity: item.is_completed ? "0.4" : "1" }}>
+        <li
+          key={item?.id}
+          style={{
+            opacity: item.is_completed ? "0.4" : "1",
+          }}
+        >
           {editing ? (
             <form className="edit-todo" onSubmit={handleEditSubmit}>
               <label htmlFor="edit-todo">
