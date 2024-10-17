@@ -3,6 +3,7 @@ import "./App.css";
 import InputToDo from "./components/InputToDo";
 import ToDoList from "./components/ToDoList";
 import Header from "./components/Header";
+import stanc from "../src/assets/stanc.png";
 
 function App() {
   const [todos, setTodos] = useState([]);
@@ -122,7 +123,9 @@ function App() {
 
   return (
     <>
-      <img src="./asstes/stanc.png" alt="" />
+      <div>
+        <img className="logo" src={stanc} alt="" />
+      </div>
       {todos && (
         <button style={{ margin: "8px" }} onClick={handleCompleteAll}>
           Complete All

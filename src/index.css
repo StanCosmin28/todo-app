@@ -54,25 +54,12 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
 /* Wrapper container */
 .wrapper {
   width: 600px;
   min-height: 500px;
   height: auto;
   border-radius: 10px;
-  /* border: 2px solid rgba(172, 255, 47, 0.4); */
 }
 .todo-form {
   display: flex;
@@ -96,8 +83,6 @@ button:focus-visible {
 .checkbox-btn input {
   padding: 0;
   margin: 0;
-  /* width: 20px; */
-  /* height: 20px; */
   width: 100%;
   height: 100%;
   cursor: pointer;
@@ -137,7 +122,6 @@ button:focus-visible {
   font-size: 0.8em;
 }
 .edit-todo {
-  /* background-color: orange; */
   width: 100%;
 }
 .edit-todo input {
