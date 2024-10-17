@@ -6,13 +6,8 @@ import Header from "./components/Header";
 
 function App() {
   const [todos, setTodos] = useState([]);
-  //  //POST
-  //  const newTodo = {
-  //   title: "New Task STAN COSMIN",
-  //   completed: false,
-  //   userId: 1,
-  // };
 
+  // POST: Add a new todo
   const onAdd = async function addTodo(newTodo) {
     try {
       const response = await fetch(
@@ -26,37 +21,39 @@ function App() {
         }
       );
       const data = await response.json();
-      // setTodos((t) => [...t, data]);
 
-      //save it to local storage
-      //....
-      // console.log("TODO added:", data);
-      return data;
+      const completeTodo = {
+        ...newTodo,
+        id: self.crypto.randomUUID(),
+        userId: data.id,
+      };
+
+      const updatedTodos = [...todos, completeTodo];
+      setTodos(updatedTodos);
+
+      // Save the updated todos to local storage
+      saveToLocalStorage(updatedTodos);
+      return completeTodo;
     } catch (error) {
       console.error("Error adding TODO:", error);
     }
   };
-  // //POST
 
-  // //DELETE
-
+  // DELETE: Remove a todo
   const onDelete = async function deleteTodo(todoId) {
     try {
       await fetch(`https://jsonplaceholder.typicode.com/todos/${todoId}`, {
         method: "DELETE",
       });
-      console.log("TODO deleted", todoId);
-      const updatedTasks = todos.filter((_, index) => index !== todoId);
-      setTodos(updatedTasks);
+      const updatedTodos = todos.filter((todo) => todo.id !== todoId);
+      setTodos(updatedTodos);
+      saveToLocalStorage(updatedTodos);
     } catch (error) {
       console.error("Error deleting TODO:", error);
     }
   };
 
-  // //DELETE
-
-  /* retrive data from local storage
-  when todos are not fetched from the API */
+  // Retrieve todos from local storage when the page loads
   useEffect(() => {
     const storedTodos = localStorage.getItem("todos");
     if (storedTodos) {
@@ -64,27 +61,78 @@ function App() {
     }
   }, []);
 
-  //get n todos from the placeholder API
-  const url = "https://jsonplaceholder.typicode.com/todos?_limit=10";
+  // Fetch todos from the API if there are none in local storage
+  const limit = 5;
+  const url = `https://jsonplaceholder.typicode.com/todos?_limit=${limit}`;
 
   useEffect(() => {
-    async function getTodos() {
-      const response = await fetch(url);
-      const data = await response.json();
-      setTodos(data);
-    }
+    const storedTodos = localStorage.getItem("todos");
 
-    getTodos();
+    //Fetch TODOS
+    const fetchTodos = async () => {
+      try {
+        const response = await fetch(url);
+        const apiTodos = await response.json();
+
+        if (storedTodos) {
+          const localTodos = JSON.parse(storedTodos);
+
+          // Check and Filter for Duplicate TODOs
+          const combinedTodos = [
+            ...apiTodos,
+            ...localTodos.filter((localTodo) => {
+              return !apiTodos.some((apiTodo) => apiTodo.id === localTodo.id);
+            }),
+          ];
+
+          setTodos(combinedTodos); //combined state
+        } else {
+          setTodos(apiTodos); //if no todos fetch data from API
+        }
+
+        // save to local storage if they are not
+        if (!storedTodos) {
+          localStorage.setItem("todos", JSON.stringify(apiTodos));
+        }
+      } catch (error) {
+        console.error("Error fetching TODOs:", error);
+      }
+    };
+
+    fetchTodos();
   }, []);
 
+  // clear all the todos form the UI && localStorage
   function handleCompleteAll() {
-    setTodos("");
-    const updatedTodos = [];
-    localStorage.setItem("todos", updatedTodos);
+    const allCompleted = todos.every((todo) => todo.is_completed); // check if all are completed
+
+    const updatedTodos = todos.map((todo) => {
+      return { ...todo, is_completed: !allCompleted };
+    });
+
+    setTodos(updatedTodos);
+    localStorage.setItem("todos", JSON.stringify(updatedTodos));
   }
+
+  // Mark all todos as complete
+  function handleClearAll() {
+    localStorage.removeItem("todos");
+    setTodos([]);
+  }
+
   return (
     <>
-      {todos && <button onClick={handleCompleteAll}>Complete All</button>}
+      <img src="./asstes/stanc.png" alt="" />
+      {todos && (
+        <button style={{ margin: "8px" }} onClick={handleCompleteAll}>
+          Complete All
+        </button>
+      )}
+      {todos && (
+        <button style={{ margin: "8px" }} onClick={handleClearAll}>
+          Clear All
+        </button>
+      )}
       <Header />
       <div className="wrapper">
         <InputToDo todos={todos} setTodos={setTodos} onAdd={onAdd} />

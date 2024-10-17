@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "../index.css";
 
-export default function TODO({ item, todos, setTodos, onDelete }) {
+export default function TODO({ item, todos, setTodos }) {
   const [editing, setEditing] = useState(false);
   const inputRef = useRef(null);
 
@@ -18,7 +18,6 @@ export default function TODO({ item, todos, setTodos, onDelete }) {
   }
 
   function handleDelete() {
-    // onDelete();
     setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== item.id));
     const updatedTodos = JSON.stringify(
       todos.filter((todo) => todo.id !== item.id)
@@ -36,7 +35,6 @@ export default function TODO({ item, todos, setTodos, onDelete }) {
   useEffect(() => {
     if (editing && inputRef.current) {
       inputRef.current.focus();
-
       //cursor at the end of the text
       inputRef.current.setSelectionRange(
         inputRef.current.value.length,
