@@ -9,9 +9,7 @@ export default function ToDoCard({ todos, setTodos, onDelete }) {
       todos.length > minTodos ? (
         <p>Greate Work! You finished all your todos</p>
       ) : (
-        <p style={{ textAlign: "left" }}>
-          You have some tasks waiting for you...
-        </p>
+        <p>You have some tasks waiting for you...</p>
       )}
       <ol className="todo-list">
         {todos && todos.length > 0 ? (

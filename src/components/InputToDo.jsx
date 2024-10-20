@@ -3,10 +3,10 @@ import "../index.css";
 export default function InputToDo({ todos, setTodos, onAdd }) {
   function handleSubmit(e) {
     e.preventDefault();
-    const value = e.target.todo.value.trim(); // Trim spaces to avoid empty strings
+    const value = e.target.todo.value.trim(); //Trim spaces to avoid empty strings
 
     if (value === "") {
-      alert("Please enter a valid TODO!"); // Prevent adding empty todos
+      alert("Please enter a valid TODO!"); //Prevent adding empty todos
       return;
     }
 
