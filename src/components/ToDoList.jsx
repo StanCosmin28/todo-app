@@ -1,7 +1,10 @@
 import "../index.css";
 import TODO from "./TODO";
+import { useContext } from "react";
+import { TodoContext } from "./TodoContext";
 
-export default function ToDoCard({ todos, setTodos, onDelete }) {
+export default function ToDoCard() {
+  const { todos, setTodos, onDelete } = useContext(TodoContext);
   const minTodos = 4;
   return (
     <>
@@ -13,15 +16,7 @@ export default function ToDoCard({ todos, setTodos, onDelete }) {
       )}
       <ol className="todo-list">
         {todos && todos.length > 0 ? (
-          todos?.map((item, index) => (
-            <TODO
-              key={index}
-              item={item}
-              todos={todos}
-              setTodos={setTodos}
-              onDelete={onDelete}
-            />
-          ))
+          todos?.map((item, index) => <TODO key={index} item={item} />)
         ) : (
           <p>No todos added yet...</p>
         )}

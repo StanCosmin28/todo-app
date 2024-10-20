@@ -1,6 +1,10 @@
+import { useContext } from "react";
+import { TodoContext } from "./TodoContext";
 import "../index.css";
 
-export default function InputToDo({ todos, setTodos, onAdd }) {
+export default function InputToDo() {
+  const { todos, setTodos, onAdd } = useContext(TodoContext);
+
   function handleSubmit(e) {
     e.preventDefault();
     const value = e.target.todo.value.trim(); //Trim spaces to avoid empty strings
