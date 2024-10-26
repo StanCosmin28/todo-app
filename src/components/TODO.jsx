@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import "../index.css";
 import { TodoContext } from "./TodoContext";
 
-export default function TODO({ item }) {
+export default function Todo({ item }) {
   const { todos, setTodos, saveToLocalStorage } = useContext(TodoContext);
   const [editing, setEditing] = useState(false);
   const inputRef = useRef(null);

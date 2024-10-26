@@ -1,9 +1,9 @@
 import "../index.css";
-import TODO from "./TODO";
+import Todo from "./Todo";
 import { useContext } from "react";
 import { TodoContext } from "./TodoContext";
 
-export default function ToDoCard() {
+export default function TodoCard() {
   const { todos } = useContext(TodoContext);
   const minTodos = 4;
   return (
@@ -16,7 +16,7 @@ export default function ToDoCard() {
       )}
       <ol className="todo-list">
         {todos && todos.length > 0 ? (
-          todos?.map((item, index) => <TODO key={index} item={item} />)
+          todos?.map((item, index) => <Todo key={index} item={item} />)
         ) : (
           <p>No todos added yet...</p>
         )}
