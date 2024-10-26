@@ -3,20 +3,19 @@ import "../index.css";
 import { TodoContext } from "./TodoContext";
 
 export default function TODO({ item }) {
-  const { todos, setTodos } = useContext(TodoContext);
+  const { todos, setTodos, saveToLocalStorage } = useContext(TodoContext);
   const [editing, setEditing] = useState(false);
   const inputRef = useRef(null);
 
   function handleComplete() {
     setTodos((prevTodos) =>
       prevTodos.map((todo) =>
-        todo.id === item.id
-          ? { ...todo, is_completed: !todo.is_completed }
-          : todo
+        todo.id === item.id ? { ...todo, completed: !todo.completed } : todo
       )
     );
+
     const updatedTodos = JSON.stringify(todos);
-    localStorage.setItem("todos", updatedTodos);
+    saveToLocalStorage("todos", updatedTodos);
   }
 
   function handleDelete() {
@@ -30,14 +29,13 @@ export default function TODO({ item }) {
   function handleEditSubmit(e) {
     e.preventDefault();
     const updatedTodos = JSON.stringify(todos);
-    localStorage.setItem("todos", updatedTodos);
+    saveToLocalStorage("todos", updatedTodos);
     setEditing(false);
   }
 
   useEffect(() => {
     if (editing && inputRef.current) {
       inputRef.current.focus();
-      //cursor at the end of the text
       inputRef.current.setSelectionRange(
         inputRef.current.value.length,
         inputRef.current.value.length
@@ -45,7 +43,6 @@ export default function TODO({ item }) {
     }
   }, [editing]);
 
-  //handle edit
   function handleInputChange(e) {
     setTodos((prevTodos) =>
       prevTodos.map((todo) =>
@@ -56,7 +53,7 @@ export default function TODO({ item }) {
 
   function handleInputBlur() {
     const updatedTodos = JSON.stringify(todos);
-    localStorage.setItem("todos", updatedTodos);
+    saveToLocalStorage("todos", updatedTodos);
     setEditing(false);
   }
 
@@ -70,7 +67,7 @@ export default function TODO({ item }) {
         <li
           key={item?.id}
           style={{
-            opacity: item.is_completed ? "0.4" : "1",
+            opacity: item.completed ? "0.4" : "1",
           }}
         >
           {editing ? (
@@ -95,14 +92,14 @@ export default function TODO({ item }) {
                 </button>
                 <p
                   style={{
-                    textDecoration: item.is_completed ? "line-through" : "none",
+                    textDecoration: item.completed ? "line-through" : "none",
                   }}
                 >
                   {item.title}
                 </p>
               </div>
               <div className="todo-btns">
-                {item.is_completed ? (
+                {item.completed ? (
                   ""
                 ) : (
                   <button onClick={handleEdit}>

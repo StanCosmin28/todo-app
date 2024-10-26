@@ -4,11 +4,11 @@ import { useContext } from "react";
 import { TodoContext } from "./TodoContext";
 
 export default function ToDoCard() {
-  const { todos, setTodos, onDelete } = useContext(TodoContext);
+  const { todos } = useContext(TodoContext);
   const minTodos = 4;
   return (
     <>
-      {todos.every((todo) => todo.is_completed === true) &&
+      {todos.every((todo) => todo.completed === true) &&
       todos.length > minTodos ? (
         <p>Greate Work! You finished all your todos</p>
       ) : (

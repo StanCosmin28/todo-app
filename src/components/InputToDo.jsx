@@ -7,17 +7,17 @@ export default function InputToDo() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    const value = e.target.todo.value.trim(); //Trim spaces to avoid empty strings
+    const value = e.target.todo.value.trim();
 
     if (value === "") {
-      alert("Please enter a valid TODO!"); //Prevent adding empty todos
+      alert("Please enter a valid TODO!");
       return;
     }
 
     const newTodo = {
       title: value,
       id: self.crypto.randomUUID(),
-      is_completed: false,
+      completed: false,
     };
 
     onAdd(newTodo);

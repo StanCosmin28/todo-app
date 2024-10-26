@@ -5,18 +5,19 @@ export const TodoContext = createContext();
 export function TodoProvider({ children }) {
   const [todos, setTodos] = useState([]);
 
+  function saveToLocalStorage(place, lsTodos) {
+    localStorage.setItem(place, lsTodos);
+  }
+  const TODO_API_URL = "https://jsonplaceholder.typicode.com/todos/";
   const onAdd = async function addTodo(newTodo) {
     try {
-      const response = await fetch(
-        "https://jsonplaceholder.typicode.com/todos",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(newTodo),
-        }
-      );
+      const response = await fetch(TODO_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newTodo),
+      });
       const data = await response.json();
 
       const completeTodo = {
@@ -28,29 +29,25 @@ export function TodoProvider({ children }) {
       const updatedTodos = [...todos, completeTodo];
       setTodos(updatedTodos);
 
-      // Save the updated todos to local storage
-      saveToLocalStorage(updatedTodos);
       return completeTodo;
     } catch (error) {
       console.error("Error adding TODO:", error);
     }
   };
 
-  // DELETE: Remove a todo
   const onDelete = async function deleteTodo(todoId) {
     try {
-      await fetch(`https://jsonplaceholder.typicode.com/todos/${todoId}`, {
+      await fetch(`${TODO_API_URL}${todoId}`, {
         method: "DELETE",
       });
       const updatedTodos = todos.filter((todo) => todo.id !== todoId);
+      localStorage.setItem("todos", updatedTodos);
       setTodos(updatedTodos);
-      saveToLocalStorage(updatedTodos);
     } catch (error) {
       console.error("Error deleting TODO:", error);
     }
   };
 
-  // Retrieve todos from local storage when the page loads
   useEffect(() => {
     const storedTodos = localStorage.getItem("todos");
     if (storedTodos) {
@@ -58,38 +55,34 @@ export function TodoProvider({ children }) {
     }
   }, []);
 
-  // Fetch todos from the API if there are none in local storage
-  const limit = 5;
-  const url = `https://jsonplaceholder.typicode.com/todos?_limit=${limit}`;
+  const TODOS_NUMBER = 5;
+  const TODO_API_URL_LIMIT = `https://jsonplaceholder.typicode.com/todos?_limit=${TODOS_NUMBER}`;
 
   useEffect(() => {
     const storedTodos = localStorage.getItem("todos");
-
-    //Fetch TODOS
     const fetchTodos = async () => {
       try {
-        const response = await fetch(url);
-        const apiTodos = await response.json();
+        if (!storedTodos || storedTodos.length === 0) {
+          const response = await fetch(TODO_API_URL_LIMIT);
+          const apiTodos = await response.json();
+          if (storedTodos) {
+            const localTodos = JSON.parse(storedTodos);
 
-        if (storedTodos) {
-          const localTodos = JSON.parse(storedTodos);
+            const combinedTodos = [
+              ...apiTodos,
+              ...localTodos.filter((localTodo) => {
+                return !apiTodos.some((apiTodo) => apiTodo.id === localTodo.id);
+              }),
+            ];
 
-          // Check and Filter for Duplicate TODOs
-          const combinedTodos = [
-            ...apiTodos,
-            ...localTodos.filter((localTodo) => {
-              return !apiTodos.some((apiTodo) => apiTodo.id === localTodo.id);
-            }),
-          ];
+            setTodos(combinedTodos);
+          } else {
+            setTodos(apiTodos);
+          }
 
-          setTodos(combinedTodos); //combined state
-        } else {
-          setTodos(apiTodos); //if no todos fetch data from API
-        }
-
-        // save to local storage if they are not
-        if (!storedTodos) {
-          localStorage.setItem("todos", JSON.stringify(apiTodos));
+          if (!storedTodos) {
+            localStorage.setItem("todos", JSON.stringify(apiTodos));
+          }
         }
       } catch (error) {
         console.error("Error fetching TODOs:", error);
@@ -98,23 +91,22 @@ export function TodoProvider({ children }) {
 
     fetchTodos();
   }, []);
+
   function handleCompleteAll() {
-    const allCompleted = todos.every((todo) => todo.is_completed); // check if all are completed
+    const allCompleted = todos.every((todo) => todo.completed);
 
     const updatedTodos = todos.map((todo) => {
-      return { ...todo, is_completed: !allCompleted };
+      return { ...todo, completed: !allCompleted };
     });
 
     setTodos(updatedTodos);
     localStorage.setItem("todos", JSON.stringify(updatedTodos));
   }
 
-  // Mark all todos as complete
   function handleClearAll() {
     localStorage.removeItem("todos");
     setTodos([]);
   }
-
   return (
     <TodoContext.Provider
       value={{
@@ -124,6 +116,7 @@ export function TodoProvider({ children }) {
         onDelete,
         handleClearAll,
         handleCompleteAll,
+        saveToLocalStorage,
       }}
     >
       {children}
