@@ -1,37 +1,55 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import "../index.css";
 import { TodoContext } from "./TodoContext";
 
 export default function Todo({ item }) {
-  const { todos, setTodos, saveToLocalStorage } = useContext(TodoContext);
+  const { todos, setTodos } = useContext(TodoContext);
   const [editing, setEditing] = useState(false);
   const inputRef = useRef(null);
 
-  function handleComplete() {
+  useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(todos));
+  }, [todos]);
+
+  const handleComplete = useCallback(() => {
     setTodos((prevTodos) =>
       prevTodos.map((todo) =>
         todo.id === item.id ? { ...todo, completed: !todo.completed } : todo
       )
     );
+  }, [todo.id, todos]);
 
-    const updatedTodos = JSON.stringify(todos);
-    saveToLocalStorage("todos", updatedTodos);
-  }
-
-  function handleDelete() {
+  const handleDelete = useCallback(() => {
     setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== item.id));
-    const updatedTodos = JSON.stringify(
-      todos.filter((todo) => todo.id !== item.id)
-    );
-    localStorage.setItem("todos", updatedTodos);
-  }
+  }, [todo.id, todos]);
 
-  function handleEditSubmit(e) {
+  const handleEditSubmit = useCallback((e) => {
     e.preventDefault();
-    const updatedTodos = JSON.stringify(todos);
-    saveToLocalStorage("todos", updatedTodos);
     setEditing(false);
-  }
+  }, []);
+
+  const handleInputChange = useCallback((e) => {
+    setTodos((prevTodos) =>
+      prevTodos.map((todo) =>
+        todo.id === item.id ? { ...todo, title: e.target.value } : todo
+      )
+    );
+  }, []);
+
+  const exitEditMode = useCallback(() => {
+    setEditing(false);
+  });
+
+  const handleEdit = useCallback(() => {
+    setEditing(true);
+  });
 
   useEffect(() => {
     if (editing && inputRef.current) {
@@ -43,33 +61,27 @@ export default function Todo({ item }) {
     }
   }, [editing]);
 
-  function handleInputChange(e) {
-    setTodos((prevTodos) =>
-      prevTodos.map((todo) =>
-        todo.id === item.id ? { ...todo, title: e.target.value } : todo
-      )
-    );
-  }
+  const listItemStyle = useMemo(
+    () => ({
+      border: item.completed
+        ? "1px solid rgba(172, 255, 47, 0.2)"
+        : "1px solid rgba(172, 255, 47, 0.4)",
+    }),
+    [item.completed]
+  );
 
-  function handleInputBlur() {
-    const updatedTodos = JSON.stringify(todos);
-    saveToLocalStorage("todos", updatedTodos);
-    setEditing(false);
-  }
-
-  function handleEdit() {
-    setEditing(true);
-  }
+  const paragraphTextDecoration = useMemo(
+    () => ({
+      opacity: item.completed ? "0.3" : "1",
+      textDecoration: item.completed ? "line-through" : "none",
+    }),
+    [item.completed]
+  );
 
   return (
     <>
       {item.title && (
-        <li
-          key={item?.id}
-          style={{
-            opacity: item.completed ? "0.4" : "1",
-          }}
-        >
+        <li key={item.id} style={listItemStyle}>
           {editing ? (
             <form className="edit-todo" onSubmit={handleEditSubmit}>
               <label htmlFor="edit-todo">
@@ -78,8 +90,8 @@ export default function Todo({ item }) {
                   type="text"
                   name="edit-todo"
                   id="edit-todo"
-                  defaultValue={item?.title}
-                  onBlur={handleInputBlur}
+                  defaultValue={item.title}
+                  onBlur={exitEditMode}
                   onChange={handleInputChange}
                 />
               </label>
@@ -88,20 +100,17 @@ export default function Todo({ item }) {
             <>
               <div className="left" onClick={handleComplete}>
                 <button className="checkbox-btn">
-                  <input type="checkbox" />
+                  <input
+                    type="checkbox"
+                    checked={item.completed}
+                    style={paragraphTextDecoration}
+                    readOnly
+                  />
                 </button>
-                <p
-                  style={{
-                    textDecoration: item.completed ? "line-through" : "none",
-                  }}
-                >
-                  {item.title}
-                </p>
+                <p style={paragraphTextDecoration}>{item.title}</p>
               </div>
               <div className="todo-btns">
-                {item.completed ? (
-                  ""
-                ) : (
+                {!item.completed && (
                   <button onClick={handleEdit}>
                     <span>Edit</span>
                   </button>

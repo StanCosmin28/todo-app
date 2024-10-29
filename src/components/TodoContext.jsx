@@ -1,98 +1,78 @@
-import { createContext, useState, useEffect } from "react";
+import {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 
 export const TodoContext = createContext();
 
 export function TodoProvider({ children }) {
   const [todos, setTodos] = useState([]);
 
-  function saveToLocalStorage(place, lsTodos) {
-    localStorage.setItem(place, lsTodos);
-  }
   const TODO_API_URL = "https://jsonplaceholder.typicode.com/todos/";
-  const onAdd = async function addTodo(newTodo) {
-    try {
-      const response = await fetch(TODO_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newTodo),
-      });
-      const data = await response.json();
+  const TODOS_NUMBER = 5;
+  const TODO_API_URL_LIMIT = `https://jsonplaceholder.typicode.com/todos?_limit=${TODOS_NUMBER}`;
 
-      const completeTodo = {
-        ...newTodo,
-        id: self.crypto.randomUUID(),
-        userId: data.id,
-      };
+  const onAdd = useCallback(
+    async (newTodo) => {
+      try {
+        const response = await fetch(TODO_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newTodo),
+        });
+        const data = await response.json();
 
-      const updatedTodos = [...todos, completeTodo];
-      setTodos(updatedTodos);
+        const completeTodo = {
+          ...newTodo,
+          userId: data.id,
+        };
+        setTodos([...todos, completeTodo]);
+      } catch (error) {
+        console.error("Error adding TODO:", error);
+      }
+    },
+    [todos]
+  );
 
-      return completeTodo;
-    } catch (error) {
-      console.error("Error adding TODO:", error);
-    }
-  };
-
-  const onDelete = async function deleteTodo(todoId) {
-    try {
-      await fetch(`${TODO_API_URL}${todoId}`, {
-        method: "DELETE",
-      });
-      const updatedTodos = todos.filter((todo) => todo.id !== todoId);
-      localStorage.setItem("todos", updatedTodos);
-      setTodos(updatedTodos);
-    } catch (error) {
-      console.error("Error deleting TODO:", error);
-    }
-  };
+  const onDelete = useCallback(
+    async (todoId) => {
+      setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== todoId));
+      try {
+        await fetch(`${TODO_API_URL}${todoId}`, {
+          method: "DELETE",
+        });
+      } catch (error) {
+        console.error("Error deleting TODO:", error);
+      }
+    },
+    [todos]
+  );
 
   useEffect(() => {
     const storedTodos = localStorage.getItem("todos");
     if (storedTodos) {
       setTodos(JSON.parse(storedTodos));
+    } else {
+      const fetchTodos = async () => {
+        try {
+          const response = await fetch(TODO_API_URL_LIMIT);
+          const apiTodos = await response.json();
+          setTodos(apiTodos);
+          localStorage.setItem("todos", JSON.stringify(apiTodos));
+        } catch (error) {
+          console.error("Error fetching todos:", error);
+        }
+      };
+      fetchTodos();
     }
   }, []);
 
-  const TODOS_NUMBER = 5;
-  const TODO_API_URL_LIMIT = `https://jsonplaceholder.typicode.com/todos?_limit=${TODOS_NUMBER}`;
-
-  useEffect(() => {
-    const storedTodos = localStorage.getItem("todos");
-    const fetchTodos = async () => {
-      try {
-        if (!storedTodos || storedTodos.length === 0) {
-          const response = await fetch(TODO_API_URL_LIMIT);
-          const apiTodos = await response.json();
-          if (storedTodos) {
-            const localTodos = JSON.parse(storedTodos);
-
-            const combinedTodos = [
-              ...apiTodos,
-              ...localTodos.filter((localTodo) => {
-                return !apiTodos.some((apiTodo) => apiTodo.id === localTodo.id);
-              }),
-            ];
-
-            setTodos(combinedTodos);
-          } else {
-            setTodos(apiTodos);
-          }
-
-          if (!storedTodos) {
-            localStorage.setItem("todos", JSON.stringify(apiTodos));
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching TODOs:", error);
-      }
-    };
-
-    fetchTodos();
-  }, []);
-
-  function handleCompleteAll() {
+  const handleCompleteAll = useCallback(() => {
     const allCompleted = todos.every((todo) => todo.completed);
 
     const updatedTodos = todos.map((todo) => {
@@ -101,25 +81,40 @@ export function TodoProvider({ children }) {
 
     setTodos(updatedTodos);
     localStorage.setItem("todos", JSON.stringify(updatedTodos));
-  }
+  }, [todos]);
 
-  function handleClearAll() {
+  const handleClearAll = useCallback(() => {
     localStorage.removeItem("todos");
     setTodos([]);
+  }, []);
+
+  function getTodos() {
+    localStorage.setItem("todos", []);
+    location.reload();
   }
+
+  const contextValue = useMemo(
+    () => ({
+      todos,
+      setTodos,
+      onAdd,
+      onDelete,
+      handleClearAll,
+      handleCompleteAll,
+      getTodos,
+    }),
+    [
+      todos,
+      setTodos,
+      onAdd,
+      onDelete,
+      handleClearAll,
+      handleCompleteAll,
+      getTodos,
+    ]
+  );
+
   return (
-    <TodoContext.Provider
-      value={{
-        todos,
-        setTodos,
-        onAdd,
-        onDelete,
-        handleClearAll,
-        handleCompleteAll,
-        saveToLocalStorage,
-      }}
-    >
-      {children}
-    </TodoContext.Provider>
+    <TodoContext.Provider value={contextValue}>{children}</TodoContext.Provider>
   );
 }

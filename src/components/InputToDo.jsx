@@ -1,11 +1,11 @@
-import { useContext } from "react";
+import { useCallback, useContext } from "react";
 import { TodoContext } from "./TodoContext";
 import "../index.css";
 
 export default function InputToDo() {
   const { todos, setTodos, onAdd } = useContext(TodoContext);
 
-  function handleSubmit(e) {
+  const handleSubmit = useCallback((e) => {
     e.preventDefault();
     const value = e.target.todo.value.trim();
 
@@ -15,8 +15,8 @@ export default function InputToDo() {
     }
 
     const newTodo = {
+      id: self.crypto.randomUUID().slice(-6),
       title: value,
-      id: self.crypto.randomUUID(),
       completed: false,
     };
 
@@ -28,7 +28,7 @@ export default function InputToDo() {
     setTodos(updatedTodoList);
 
     e.target.reset();
-  }
+  });
 
   return (
     <>
