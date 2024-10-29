@@ -8,7 +8,7 @@ import {
 
 export const TodoContext = createContext();
 
-export function TodoProvider({ children }) {
+export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
   const [todos, setTodos] = useState([]);
 
   const TODO_API_URL = "https://jsonplaceholder.typicode.com/todos/";
@@ -117,4 +117,4 @@ export function TodoProvider({ children }) {
   return (
     <TodoContext.Provider value={contextValue}>{children}</TodoContext.Provider>
   );
-}
+};

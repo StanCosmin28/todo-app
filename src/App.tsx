@@ -1,7 +1,7 @@
 import { TodoProvider } from "./components/TodoContext";
 import "./App.css";
-import InputToDo from "./components/InputToDo";
-import TodoList from "./components/ToDoList";
+import InputToDo from "./components/InputTodo";
+import TodoList from "./components/TodoList";
 import Header from "./components/Header";
 import ActionBtns from "./components/ActionBtns";
 
