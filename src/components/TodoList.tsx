@@ -1,10 +1,11 @@
+import React from "react";
 import "../index.css";
 import Todo from "./Todo";
 import { useContext } from "react";
 import { TodoContext } from "./TodoContext";
 
 export default function TodoCard() {
-  const { todos, getTodos } = useContext(TodoContext);
+  const { todos, getTodos } = useContext(TodoContext)!;
   const MIN_TODOS = 4;
   return (
     <>

@@ -10,13 +10,11 @@ interface Todo {
   id: string;
   title: string;
   completed: boolean;
-  // userId: number;
 }
 
 interface TodoContextType {
   todos: Todo[];
   setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
-  // onAdd: (newTodo: Omit<Todo, "userId">) => void;
   onAdd: (newTodo: Todo) => void;
   onDelete: (todoId: string) => void;
   handleClearAll: () => void;
@@ -35,6 +33,10 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
   const TODOS_NUMBER: number = 5;
   const TODO_API_URL_LIMIT: string = `https://jsonplaceholder.typicode.com/todos?_limit=${TODOS_NUMBER}`;
 
+  const updateLocalStorage = (todos: Todo[]) => {
+    localStorage.setItem("todos", JSON.stringify(todos));
+  };
+
   const onAdd = useCallback(
     async (newTodo: Todo) => {
       try {
@@ -50,7 +52,9 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
         const completeTodo = {
           ...newTodo,
         };
-        setTodos([...todos, completeTodo]);
+        const updatedTodos = [...todos, completeTodo];
+        setTodos(updatedTodos);
+        updateLocalStorage(updatedTodos);
         return data;
       } catch (error) {
         console.error("Error adding TODO:", error);
@@ -61,7 +65,10 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
 
   const onDelete = useCallback(
     async (todoId: string) => {
-      setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== todoId));
+      const updatedTodos = todos.filter((todo) => todo.id !== todoId);
+      setTodos(updatedTodos);
+      updateLocalStorage(updatedTodos);
+
       try {
         await fetch(`${TODO_API_URL}${todoId}`, {
           method: "DELETE",
@@ -83,7 +90,7 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
           const response = await fetch(TODO_API_URL_LIMIT);
           const apiTodos = await response.json();
           setTodos(apiTodos);
-          localStorage.setItem("todos", JSON.stringify(apiTodos));
+          updateLocalStorage(apiTodos);
         } catch (error) {
           console.error("Error fetching todos:", error);
         }
@@ -100,7 +107,6 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     setTodos(updatedTodos);
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
   }, [todos]);
 
   const handleClearAll = useCallback(() => {
@@ -109,7 +115,7 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   function getTodos() {
-    localStorage.setItem("todos", []);
+    setTimeout(() => updateLocalStorage([]), 200);
     location.reload();
   }
 

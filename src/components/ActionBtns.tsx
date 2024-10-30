@@ -4,7 +4,7 @@ import { TodoContext } from "./TodoContext";
 import stanc from "../assets/stanc.png";
 
 export default function ActionBtns() {
-  const { todos, handleClearAll, handleCompleteAll } = useContext(TodoContext);
+  const { todos, handleClearAll, handleCompleteAll } = useContext(TodoContext)!;
   return (
     <>
       <div>
