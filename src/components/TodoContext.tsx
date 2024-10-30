@@ -1,11 +1,5 @@
-import React, {
-  createContext,
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-} from "react";
-
+import React, { createContext, useState, useCallback, useMemo } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 interface Todo {
   id: string;
   title: string;
@@ -36,68 +30,78 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
   const updateLocalStorage = (todos: Todo[]) => {
     localStorage.setItem("todos", JSON.stringify(todos));
   };
+  const { mutate: onAdd } = useMutation({
+    mutationFn: async (newTodo) => {
+      const response = await fetch(TODO_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newTodo),
+      });
 
-  const onAdd = useCallback(
-    async (newTodo: Todo) => {
-      try {
-        const response = await fetch(TODO_API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(newTodo),
-        });
-        const data = await response.json();
-
-        const completeTodo = {
-          ...newTodo,
-        };
-        const updatedTodos = [...todos, completeTodo];
-        setTodos(updatedTodos);
-        updateLocalStorage(updatedTodos);
-        return data;
-      } catch (error) {
-        console.error("Error adding TODO:", error);
+      if (!response.ok) {
+        throw new Error("Failed to add TODO");
       }
-    },
-    [todos]
-  );
 
-  const onDelete = useCallback(
-    async (todoId: string) => {
+      const data = await response.json();
+      return data;
+    },
+    onSuccess: (data) => {
+      data.id = self.crypto.randomUUID().slice(-6);
+      const updatedTodos = [...todos, data];
+      setTodos(updatedTodos);
+      updateLocalStorage(updatedTodos);
+    },
+    onError: (error) => {
+      console.error("Error adding TODO:", error);
+    },
+  });
+
+  const { mutate: onDelete } = useMutation({
+    mutationFn: async (todoId: string) => {
+      const response = await fetch(`${TODO_API_URL}${todoId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete TODO");
+      }
+
+      const data = await response.json();
+      return data;
+    },
+    onSuccess: (todoId, data) => {
       const updatedTodos = todos.filter((todo) => todo.id !== todoId);
       setTodos(updatedTodos);
       updateLocalStorage(updatedTodos);
+    },
+    onError: (error) => {
+      console.error("Error deleting TODO:", error);
+    },
+  });
 
-      try {
-        await fetch(`${TODO_API_URL}${todoId}`, {
-          method: "DELETE",
+  const { isLoading, data, error } = useQuery({
+    queryKey: ["todos"],
+    queryFn: () => {
+      const storedTodos = localStorage.getItem("todos");
+      if (storedTodos) {
+        setTodos(JSON.parse(storedTodos));
+      } else {
+        fetch(TODO_API_URL_LIMIT).then(async (res) => {
+          if (!res.ok) {
+            throw new Error("failed to fetch");
+          }
+          const todoApiData = await res.json();
+          setTodos(todoApiData);
+          updateLocalStorage(todoApiData);
         });
-      } catch (error) {
-        console.error("Error deleting TODO:", error);
       }
     },
-    [todos]
-  );
-
-  useEffect(() => {
-    const storedTodos = localStorage.getItem("todos");
-    if (storedTodos) {
-      setTodos(JSON.parse(storedTodos));
-    } else {
-      const fetchTodos = async () => {
-        try {
-          const response = await fetch(TODO_API_URL_LIMIT);
-          const apiTodos = await response.json();
-          setTodos(apiTodos);
-          updateLocalStorage(apiTodos);
-        } catch (error) {
-          console.error("Error fetching todos:", error);
-        }
-      };
-      fetchTodos();
-    }
-  }, []);
+  });
 
   const handleCompleteAll = useCallback(() => {
     const allCompleted = todos.every((todo) => todo.completed);

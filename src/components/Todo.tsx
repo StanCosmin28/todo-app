@@ -21,7 +21,7 @@ interface TodoProps {
 }
 
 export default function Todo({ item }: TodoProps) {
-  const { todos, setTodos } = useContext(TodoContext)!;
+  const { todos, setTodos, onDelete } = useContext(TodoContext)!;
   const [editing, setEditing] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -39,7 +39,8 @@ export default function Todo({ item }: TodoProps) {
 
   const handleDelete = useCallback(() => {
     setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== item.id));
-  }, [todos]);
+    onDelete(item);
+  }, [todos, item]);
 
   const handleEditSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {

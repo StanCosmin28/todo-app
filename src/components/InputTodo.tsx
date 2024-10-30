@@ -37,10 +37,10 @@ export default function InputToDo() {
 
       onAdd(newTodo);
 
-      const updatedTodoList = [...todos, newTodo];
-      localStorage.setItem("todos", JSON.stringify(updatedTodoList));
+      // const updatedTodoList = [...todos, newTodo];
+      // localStorage.setItem("todos", JSON.stringify(updatedTodoList));
 
-      setTodos(updatedTodoList);
+      // setTodos(updatedTodoList);
 
       target.reset();
     },

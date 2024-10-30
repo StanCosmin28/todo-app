@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 import { TodoProvider } from "./components/TodoContext";
 import "./App.css";
@@ -7,15 +8,18 @@ import Header from "./components/Header";
 import ActionBtns from "./components/ActionBtns";
 
 function App() {
+  const queryClient = new QueryClient();
   return (
-    <TodoProvider>
-      <ActionBtns />
-      <Header />
-      <div className="wrapper">
-        <InputToDo />
-        <TodoList />
-      </div>
-    </TodoProvider>
+    <QueryClientProvider client={queryClient}>
+      <TodoProvider>
+        <ActionBtns />
+        <Header />
+        <div className="wrapper">
+          <InputToDo />
+          <TodoList />
+        </div>
+      </TodoProvider>
+    </QueryClientProvider>
   );
 }
 
