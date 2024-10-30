@@ -1,19 +1,23 @@
+import { useCallback, useContext } from "react";
+import { TodoContext } from "./TodoContext";
 import "../index.css";
 
-export default function InputToDo({ todos, setTodos, onAdd }) {
-  function handleSubmit(e) {
+export default function InputToDo() {
+  const { todos, setTodos, onAdd } = useContext(TodoContext);
+
+  const handleSubmit = useCallback((e) => {
     e.preventDefault();
-    const value = e.target.todo.value.trim(); //Trim spaces to avoid empty strings
+    const value = e.target.todo.value.trim();
 
     if (value === "") {
-      alert("Please enter a valid TODO!"); //Prevent adding empty todos
+      alert("Please enter a valid TODO!");
       return;
     }
 
     const newTodo = {
+      id: self.crypto.randomUUID().slice(-6),
       title: value,
-      id: self.crypto.randomUUID(),
-      is_completed: false,
+      completed: false,
     };
 
     onAdd(newTodo);
@@ -24,7 +28,7 @@ export default function InputToDo({ todos, setTodos, onAdd }) {
     setTodos(updatedTodoList);
 
     e.target.reset();
-  }
+  });
 
   return (
     <>

@@ -1,29 +1,27 @@
 import "../index.css";
-import TODO from "./TODO";
+import Todo from "./Todo";
+import { useContext } from "react";
+import { TodoContext } from "./TodoContext";
 
-export default function ToDoCard({ todos, setTodos, onDelete }) {
-  const minTodos = 4;
+export default function TodoCard() {
+  const { todos, getTodos } = useContext(TodoContext);
+  const MIN_TODOS = 4;
   return (
     <>
-      {todos.every((todo) => todo.is_completed === true) &&
-      todos.length > minTodos ? (
+      {todos.every((todo) => todo.completed === true) &&
+      todos.length > MIN_TODOS ? (
         <p>Greate Work! You finished all your todos</p>
       ) : (
         <p>You have some tasks waiting for you...</p>
       )}
       <ol className="todo-list">
         {todos && todos.length > 0 ? (
-          todos?.map((item, index) => (
-            <TODO
-              key={index}
-              item={item}
-              todos={todos}
-              setTodos={setTodos}
-              onDelete={onDelete}
-            />
-          ))
+          todos?.map((item, index) => <Todo key={index} item={item} />)
         ) : (
-          <p>No todos added yet...</p>
+          <>
+            <p>No todos added yet...</p>
+            <button onClick={getTodos}>Get Todos</button>
+          </>
         )}
       </ol>
     </>
