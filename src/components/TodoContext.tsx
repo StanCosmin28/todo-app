@@ -1,4 +1,4 @@
-import {
+import React, {
   createContext,
   useState,
   useEffect,
@@ -6,17 +6,37 @@ import {
   useMemo,
 } from "react";
 
-export const TodoContext = createContext();
+interface Todo {
+  id: string;
+  title: string;
+  completed: boolean;
+  // userId: number;
+}
+
+interface TodoContextType {
+  todos: Todo[];
+  setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
+  // onAdd: (newTodo: Omit<Todo, "userId">) => void;
+  onAdd: (newTodo: Todo) => void;
+  onDelete: (todoId: string) => void;
+  handleClearAll: () => void;
+  handleCompleteAll: () => void;
+  getTodos: () => void;
+}
+
+export const TodoContext = createContext<TodoContextType | undefined>(
+  undefined
+);
 
 export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
-  const [todos, setTodos] = useState([]);
+  const [todos, setTodos] = useState<Todo[]>([]);
 
-  const TODO_API_URL = "https://jsonplaceholder.typicode.com/todos/";
-  const TODOS_NUMBER = 5;
-  const TODO_API_URL_LIMIT = `https://jsonplaceholder.typicode.com/todos?_limit=${TODOS_NUMBER}`;
+  const TODO_API_URL: string = "https://jsonplaceholder.typicode.com/todos/";
+  const TODOS_NUMBER: number = 5;
+  const TODO_API_URL_LIMIT: string = `https://jsonplaceholder.typicode.com/todos?_limit=${TODOS_NUMBER}`;
 
   const onAdd = useCallback(
-    async (newTodo) => {
+    async (newTodo: Todo) => {
       try {
         const response = await fetch(TODO_API_URL, {
           method: "POST",
@@ -29,9 +49,9 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
 
         const completeTodo = {
           ...newTodo,
-          userId: data.id,
         };
         setTodos([...todos, completeTodo]);
+        return data;
       } catch (error) {
         console.error("Error adding TODO:", error);
       }
@@ -40,7 +60,7 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   const onDelete = useCallback(
-    async (todoId) => {
+    async (todoId: string) => {
       setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== todoId));
       try {
         await fetch(`${TODO_API_URL}${todoId}`, {

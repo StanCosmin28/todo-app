@@ -1,43 +1,58 @@
-import { useCallback, useContext } from "react";
+import React, { useCallback, useContext } from "react";
 import { TodoContext } from "./TodoContext";
 import "../index.css";
 
+interface Todo {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
 export default function InputToDo() {
-  const { todos, setTodos, onAdd } = useContext(TodoContext);
+  const context = useContext(TodoContext);
 
-  const handleSubmit = useCallback((e) => {
-    e.preventDefault();
-    const value = e.target.todo.value.trim();
+  if (!context) {
+    throw new Error("InputToDo must be used within a TodoProvider");
+  }
 
-    if (value === "") {
-      alert("Please enter a valid TODO!");
-      return;
-    }
+  const { todos, setTodos, onAdd } = context;
 
-    const newTodo = {
-      id: self.crypto.randomUUID().slice(-6),
-      title: value,
-      completed: false,
-    };
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
 
-    onAdd(newTodo);
+      const target = e.currentTarget;
+      const value = target.elements.namedItem("todo") as HTMLInputElement;
 
-    const updatedTodoList = [...todos, newTodo];
-    localStorage.setItem("todos", JSON.stringify(updatedTodoList));
+      if (!value || value.value.trim() === "") {
+        alert("Please enter a valid TODO!");
+        return;
+      }
 
-    setTodos(updatedTodoList);
+      const newTodo: Todo = {
+        id: self.crypto.randomUUID().slice(-6),
+        title: value.value.trim(),
+        completed: false,
+      };
 
-    e.target.reset();
-  });
+      onAdd(newTodo);
+
+      const updatedTodoList = [...todos, newTodo];
+      localStorage.setItem("todos", JSON.stringify(updatedTodoList));
+
+      setTodos(updatedTodoList);
+
+      target.reset();
+    },
+    [todos, onAdd, setTodos]
+  );
 
   return (
-    <>
-      <form className="todo-form" onSubmit={handleSubmit}>
-        <label htmlFor="todo">
-          <input type="text" name="todo" id="todo" placeholder="Input TODOs" />
-          <button type="submit">+</button>
-        </label>
-      </form>
-    </>
+    <form className="todo-form" onSubmit={handleSubmit}>
+      <label htmlFor="todo">
+        <input type="text" name="todo" id="todo" placeholder="Input TODOs" />
+        <button type="submit">+</button>
+      </label>
+    </form>
   );
 }

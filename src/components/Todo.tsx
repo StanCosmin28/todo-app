@@ -9,10 +9,21 @@ import {
 import "../index.css";
 import { TodoContext } from "./TodoContext";
 
-export default function Todo({ item }) {
+interface Todo {
+  id: string;
+  title: string;
+  completed: boolean;
+  userId?: number;
+}
+
+interface TodoProps {
+  item: Todo;
+}
+
+export default function Todo({ item }: TodoProps) {
   const { todos, setTodos } = useContext(TodoContext);
-  const [editing, setEditing] = useState(false);
-  const inputRef = useRef(null);
+  const [editing, setEditing] = useState<boolean>(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
