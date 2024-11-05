@@ -1,5 +1,6 @@
 import React, { createContext, useState, useCallback, useMemo } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+
 interface Todo {
   id: string;
   title: string;
@@ -31,7 +32,7 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem("todos", JSON.stringify(todos));
   };
   const { mutate: onAdd } = useMutation({
-    mutationFn: async (newTodo) => {
+    mutationFn: async (newTodo: Todo) => {
       const response = await fetch(TODO_API_URL, {
         method: "POST",
         headers: {
@@ -44,12 +45,12 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error("Failed to add TODO");
       }
 
-      const data = await response.json();
+      const data: Todo = await response.json();
       return data;
     },
     onSuccess: (data) => {
       data.id = self.crypto.randomUUID().slice(-6);
-      const updatedTodos = [...todos, data];
+      const updatedTodos: Todo[] = [...todos, data];
       setTodos(updatedTodos);
       updateLocalStorage(updatedTodos);
     },
@@ -71,11 +72,11 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error("Failed to delete TODO");
       }
 
-      const data = await response.json();
+      const data: Todo = await response.json();
       return data;
     },
-    onSuccess: (todoId, data) => {
-      const updatedTodos = todos.filter((todo) => todo.id !== todoId);
+    onSuccess: (todoId) => {
+      const updatedTodos = todos.filter((todo) => todo.id !== todoId.id);
       setTodos(updatedTodos);
       updateLocalStorage(updatedTodos);
     },
@@ -84,7 +85,7 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
     },
   });
 
-  const { isLoading, data, error } = useQuery({
+  useQuery({
     queryKey: ["todos"],
     queryFn: () => {
       const storedTodos = localStorage.getItem("todos");
@@ -95,7 +96,7 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
           if (!res.ok) {
             throw new Error("failed to fetch");
           }
-          const todoApiData = await res.json();
+          const todoApiData: Todo[] = await res.json();
           setTodos(todoApiData);
           updateLocalStorage(todoApiData);
         });
