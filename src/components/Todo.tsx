@@ -1,4 +1,4 @@
-import {
+import React, {
   useCallback,
   useContext,
   useEffect,
@@ -9,10 +9,21 @@ import {
 import "../index.css";
 import { TodoContext } from "./TodoContext";
 
-export default function Todo({ item }) {
-  const { todos, setTodos } = useContext(TodoContext);
-  const [editing, setEditing] = useState(false);
-  const inputRef = useRef(null);
+interface Todo {
+  id: string;
+  title: string;
+  completed: boolean;
+  userId?: number;
+}
+
+interface TodoProps {
+  item: Todo;
+}
+
+export default function Todo({ item }: TodoProps) {
+  const { todos, setTodos, onDelete } = useContext(TodoContext)!;
+  const [editing, setEditing] = useState<boolean>(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
@@ -24,32 +35,39 @@ export default function Todo({ item }) {
         todo.id === item.id ? { ...todo, completed: !todo.completed } : todo
       )
     );
-  }, [todo.id, todos]);
+  }, [todos]);
 
   const handleDelete = useCallback(() => {
     setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== item.id));
-  }, [todo.id, todos]);
+    onDelete(item);
+  }, [todos, item]);
 
-  const handleEditSubmit = useCallback((e) => {
-    e.preventDefault();
-    setEditing(false);
-  }, []);
+  const handleEditSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      setEditing(false);
+    },
+    []
+  );
 
-  const handleInputChange = useCallback((e) => {
-    setTodos((prevTodos) =>
-      prevTodos.map((todo) =>
-        todo.id === item.id ? { ...todo, title: e.target.value } : todo
-      )
-    );
-  }, []);
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setTodos((prevTodos) =>
+        prevTodos.map((todo) =>
+          todo.id === item.id ? { ...todo, title: e.target.value } : todo
+        )
+      );
+    },
+    [todos]
+  );
 
   const exitEditMode = useCallback(() => {
     setEditing(false);
-  });
+  }, []);
 
   const handleEdit = useCallback(() => {
     setEditing(true);
-  });
+  }, []);
 
   useEffect(() => {
     if (editing && inputRef.current) {
