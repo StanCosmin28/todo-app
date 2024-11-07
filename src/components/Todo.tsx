@@ -39,7 +39,7 @@ export default function Todo({ item }: TodoProps) {
 
   const handleDelete = useCallback(() => {
     setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== item.id));
-    onDelete(item);
+    onDelete(item.id);
   }, [todos, item]);
 
   const handleEditSubmit = useCallback(
